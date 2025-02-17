@@ -27,4 +27,3 @@ jobs:
 
       - name: Validate Terraform Configuration
         run: terraform validate
-
