@@ -6,13 +6,13 @@ resource "aws_instance" "web" {
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
 
   root_block_device {
-    volume_size = var.root_volume_size
-    volume_type = var.root_volume_type
+    volume_size           = var.root_volume_size
+    volume_type           = var.root_volume_type
     delete_on_termination = true
   }
 
   disable_api_termination = false
-  
+
   tags = {
     Name = var.instance_name
   }

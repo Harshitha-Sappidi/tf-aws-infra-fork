@@ -106,7 +106,7 @@ variable "vpc_security_group_ids" {
 variable "ingress_cidr_blocks" {
   description = "CIDR blocks allowed for ingress traffic"
   type        = list(string)
-  default     = ["0.0.0.0/0"] 
+  default     = ["0.0.0.0/0"]
 }
 
 variable "egress_from_port" {
