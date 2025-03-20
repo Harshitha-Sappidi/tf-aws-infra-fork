@@ -1,6 +1,7 @@
 variable "aws_region" {
   description = "AWS Region where resources will be created"
   type        = string
+  default     = "us-east-1"
 }
 
 variable "aws_profile" {
@@ -54,6 +55,7 @@ variable "destination_cidr_block" {
   description = "CIDR block for public internet access route"
   type        = string
 }
+# EC2 Configuration
 variable "ami_id" {
   description = "AMI ID for the EC2 instance"
   type        = string
@@ -87,8 +89,9 @@ variable "instance_name" {
   type        = string
 }
 
-variable "sg_name" {
-  description = "Name of the security group"
+# Security Group Configuration
+variable "instance_secuitygroup_name" {
+  description = "Name of the Instance security group"
   type        = string
 }
 
@@ -131,4 +134,75 @@ variable "egress_cidr_blocks" {
   description = "CIDR blocks allowed for egress traffic"
   type        = list(string)
   default     = ["0.0.0.0/0"]
+}
+
+# RDS Configuration
+
+variable "db_instance_id" {
+  description = "Identifier for the RDS instance"
+  type        = string
+}
+
+variable "db_allocated_storage" {
+  description = "Allocated storage size for the RDS instance (in GB)"
+  type        = number
+}
+
+variable "db_instance_class" {
+  description = "Instance class for the RDS instance"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+variable "db_engine" {
+  description = "Database engine for the RDS instance"
+  type        = string
+  default     = "mysql"
+}
+
+variable "db_engine_version" {
+  description = "Engine version for the RDS instance"
+  type        = string
+  default     = "8.0.36"
+}
+
+variable "db_port" {
+  description = "Port for the RDS database"
+  default     = 3306
+  type        = number
+}
+variable "port" {
+  description = "Port"
+  default     = 8080
+  type        = number
+}
+variable "db_name" {
+  description = "Database name"
+  default     = "csye6225"
+}
+variable "db_username" {
+  description = "Username for the RDS instance"
+  type        = string
+}
+
+variable "db_subnet_group_name" {
+  description = "Subnet group name for the RDS instance"
+  type        = string
+  default     = "rds-private-subnet-group"
+}
+
+variable "db_family" {
+  description = "Family of the RDS parameter group"
+  type        = string
+  default     = "mysql8.0"
+}
+
+variable "db_parameter_group_name" {
+  description = "Name of the RDS parameter group"
+  type        = string
+}
+
+variable "rds_securitygroup_name" {
+  description = "Name of the RDS security group"
+  type        = string
 }
