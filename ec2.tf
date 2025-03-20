@@ -14,7 +14,7 @@ resource "aws_instance" "web" {
 
   disable_api_termination = false
 
- user_data = <<-EOF
+  user_data = <<-EOF
                #!/bin/bash
 
                # Update and install required packages

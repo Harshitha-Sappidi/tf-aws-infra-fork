@@ -4,7 +4,7 @@ resource "random_uuid" "bucket_uuid" {}
 
 # Create S3 Bucket
 resource "aws_s3_bucket" "webapp_bucket" {
-  bucket = random_uuid.bucket_uuid.result
+  bucket        = random_uuid.bucket_uuid.result
   force_destroy = true #Allows terraform to delete non-empty bucket
 }
 

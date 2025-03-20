@@ -163,7 +163,7 @@ variable "db_engine" {
 variable "db_engine_version" {
   description = "Engine version for the RDS instance"
   type        = string
-  default =    "8.0.36"
+  default     = "8.0.36"
 }
 
 variable "db_port" {
