@@ -206,3 +206,14 @@ variable "rds_securitygroup_name" {
   description = "Name of the RDS security group"
   type        = string
 }
+
+# Variable for domain
+variable "domain_name" {
+  description = "The root domain name"
+  type        = string
+}
+
+variable "namespace" {
+  description = "The namespace for CloudWatch metrics"
+  default     = "metrics-webapp"
+}

@@ -1,6 +1,6 @@
 # IAM Role for EC2 Instance
 resource "aws_iam_role" "ec2_role" {
-  name = "EC2S3SecretsRole"
+  name = "EC2InstanceIAMRole"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -62,6 +62,54 @@ resource "aws_iam_policy" "ec2_secrets_manager_policy" {
       }
     ]
   })
+}
+
+# Create CloudWatch Log Group
+resource "aws_cloudwatch_log_group" "csye6225_log_group" {
+  name              = "csye6225-log"
+  retention_in_days = 7
+}
+
+# Create CloudWatch Log Stream
+resource "aws_cloudwatch_log_stream" "webapp_log_stream" {
+  name           = "webapp-log"
+  log_group_name = aws_cloudwatch_log_group.csye6225_log_group.name
+}
+
+# CloudWatch Agent Policy
+resource "aws_iam_policy" "cloudwatch_agent_policy" {
+  name        = "CloudWatchAgentPolicy"
+  description = "Allows CloudWatch logging and metrics collection"
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        Effect = "Allow"
+        "Action" : [
+          "cloudwatch:PutMetricData",
+          "cloudwatch:ListMetrics",
+          "cloudwatch:GetMetricData",
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:ListTagsForResource"
+        ],
+        "Resource" : "*",
+      }
+    ]
+  })
+}
+
+# Attach CloudWatch Agent Policy to IAM Role
+resource "aws_iam_role_policy_attachment" "cloudwatch_agent_custom_policy_attachment" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = aws_iam_policy.cloudwatch_agent_policy.arn
+}
+
+# CloudWatch Agent Server Policy - AWS managed policy for CloudWatch agent
+resource "aws_iam_role_policy_attachment" "cloudwatch_agent_server_policy_attachment" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
 # Attach Secrets Manager Policy to IAM Role
