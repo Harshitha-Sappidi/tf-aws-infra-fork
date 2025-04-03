@@ -106,12 +106,6 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_agent_custom_policy_attach
   policy_arn = aws_iam_policy.cloudwatch_agent_policy.arn
 }
 
-# CloudWatch Agent Server Policy - AWS managed policy for CloudWatch agent
-resource "aws_iam_role_policy_attachment" "cloudwatch_agent_server_policy_attachment" {
-  role       = aws_iam_role.ec2_role.name
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-}
-
 # Attach Secrets Manager Policy to IAM Role
 resource "aws_iam_role_policy_attachment" "ec2_secrets_manager_policy_attachment" {
   role       = aws_iam_role.ec2_role.name
@@ -120,6 +114,6 @@ resource "aws_iam_role_policy_attachment" "ec2_secrets_manager_policy_attachment
 
 # IAM Instance Profile for EC2 Instance
 resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "EC2InstanceProfileWithS3AndSecretsAccess"
+  name = "EC2InstanceProfile"
   role = aws_iam_role.ec2_role.name
 }

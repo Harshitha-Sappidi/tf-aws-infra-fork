@@ -106,32 +106,29 @@ variable "vpc_security_group_ids" {
   type        = list(string)
   default     = []
 }
-variable "ingress_cidr_blocks" {
+variable "ssh_ingress_cidr_blocks" {
   description = "CIDR blocks allowed for ingress traffic"
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
 
-variable "egress_from_port" {
-  description = "Egress rule: from port (default: all traffic)"
-  type        = number
-  default     = 0
-}
-
-variable "egress_to_port" {
-  description = "Egress rule: to port (default: all traffic)"
-  type        = number
-  default     = 0
-}
-
-variable "egress_protocol" {
-  description = "Protocol for egress traffic (default: all protocols)"
-  type        = string
-  default     = "-1"
-}
-
 variable "egress_cidr_blocks" {
   description = "CIDR blocks allowed for egress traffic"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+
+# Load Balancer Security Group Name
+variable "loadbalancer_securitygroup" {
+  description = "Name of the Load Balancer security group"
+  type        = string
+  default     = "load-balancer-securitygroup"
+}
+
+# Allowed ingress CIDR blocks for the load balancer (Default: Open to public)
+variable "lb_ingress_cidr_blocks" {
+  description = "CIDR blocks allowed to access Load Balancer"
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
@@ -216,4 +213,41 @@ variable "domain_name" {
 variable "namespace" {
   description = "The namespace for CloudWatch metrics"
   default     = "metrics-webapp"
+}
+
+# Autoscaling 
+variable "scaleup_threshold" {
+  description = "Threshload value for scaling up"
+  default     = 17
+}
+
+variable "scaleup_description" {
+  description = "Scale up when CPU usage"
+  default     = 17
+}
+variable "scaledown_threshold" {
+  description = "Threshload value for scaling down"
+  default     = 7
+}
+
+variable "scaledown_description" {
+  description = "Scale down when CPU usage"
+  default     = 7
+}
+variable "desired_capacity" {
+  description = "The desired number of instances in the Auto Scaling Group"
+  type        = number
+  default     = 3
+}
+
+variable "min_size" {
+  description = "The minimum number of instances in the Auto Scaling Group"
+  type        = number
+  default     = 2
+}
+
+variable "max_size" {
+  description = "The maximum number of instances in the Auto Scaling Group"
+  type        = number
+  default     = 5
 }
