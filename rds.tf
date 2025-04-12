@@ -1,38 +1,26 @@
-# Storing the RDS database password
-resource "aws_secretsmanager_secret" "db_password" {
-  name                    = "rds-db-password-fixed"
-  recovery_window_in_days = 0
+# Generate a secure random password for the RDS database
+resource "random_password" "db_password" {
+  length  = 16
+  special = false
 }
 
-# Store the RDS database password in Secrets Manager
+# Create a secret in Secrets Manager to store DB credentials
+resource "aws_secretsmanager_secret" "rds_password_secret" {
+  name                    = "rds-db-password-fixed"
+  recovery_window_in_days = 0
+  kms_key_id              = aws_kms_key.secrets_key.id
+}
+
+# Store the username + generated password in the secret
 resource "aws_secretsmanager_secret_version" "db_password" {
-  secret_id = aws_secretsmanager_secret.db_password.id
+  secret_id = aws_secretsmanager_secret.rds_password_secret.id
   secret_string = jsonencode({
     username = var.db_username
     password = random_password.db_password.result
   })
 }
 
-# Retrieve the secret value from Secrets Manager
-data "aws_secretsmanager_secret_version" "db_password" {
-  secret_id = aws_secretsmanager_secret.db_password.id
-
-  # Explicit dependency to ensure the secret version is created before this is used
-  depends_on = [aws_secretsmanager_secret_version.db_password]
-}
-
-# Decode the secret value
-locals {
-  db_password = jsondecode(data.aws_secretsmanager_secret_version.db_password.secret_string).password
-}
-
-# Generate a random password for the RDS database
-resource "random_password" "db_password" {
-  length  = 16
-  special = false
-}
-
-# Create RDS Instance
+# Create RDS Instance using generated password
 resource "aws_db_instance" "rds_instance" {
   identifier             = var.db_instance_id
   allocated_storage      = var.db_allocated_storage
@@ -41,16 +29,20 @@ resource "aws_db_instance" "rds_instance" {
   engine_version         = var.db_engine_version
   db_name                = var.db_name
   username               = var.db_username
-  password               = local.db_password
+  password               = random_password.db_password.result
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  storage_encrypted      = true
+  kms_key_id             = aws_kms_key.rds_key.arn
   parameter_group_name   = aws_db_parameter_group.my_param_group.name
   db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
   skip_final_snapshot    = true
   publicly_accessible    = false
   multi_az               = false
+
   tags = {
     Name = "csye6225-rds"
   }
+
   depends_on = [aws_db_subnet_group.rds_subnet_group]
 }
 

@@ -7,17 +7,28 @@ resource "aws_s3_bucket" "webapp_bucket" {
   bucket        = random_uuid.bucket_uuid.result
   force_destroy = true #Allows terraform to delete non-empty bucket
 }
-
-# Enable Bucket Encryption
+# Enable Bucket Encryption with KMS
 resource "aws_s3_bucket_server_side_encryption_configuration" "my_bucket_encryption" {
   bucket = aws_s3_bucket.webapp_bucket.id
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = aws_kms_key.s3_key.arn
     }
   }
 }
+
+# # Enable Bucket Encryption
+# resource "aws_s3_bucket_server_side_encryption_configuration" "my_bucket_encryption" {
+#   bucket = aws_s3_bucket.webapp_bucket.id
+
+#   rule {
+#     apply_server_side_encryption_by_default {
+#       sse_algorithm = "AES256"
+#     }
+#   }
+# }
 
 # Enable Bucket Versioning
 resource "aws_s3_bucket_versioning" "my_bucket_versioning" {

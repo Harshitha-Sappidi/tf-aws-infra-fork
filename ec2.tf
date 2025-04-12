@@ -12,7 +12,6 @@
 #   volume_type           = var.root_volume_type
 #   delete_on_termination = true
 # }
-
 resource "aws_launch_template" "webapp" {
   name          = "webapp-launch-template"
   image_id      = var.ami_id
@@ -30,6 +29,8 @@ resource "aws_launch_template" "webapp" {
       volume_size           = var.root_volume_size
       volume_type           = var.root_volume_type
       delete_on_termination = true
+      encrypted             = true
+      kms_key_id            = aws_kms_key.ec2_key.arn
     }
   }
 
@@ -43,36 +44,38 @@ resource "aws_launch_template" "webapp" {
   user_data = base64encode(<<-EOF
 #!/bin/bash
 
-# Update system packages
-sudo apt update
-sudo apt-get install -y mysql-client-core-8.0 unzip
+# Update packages and install mysql client (optional if already in AMI)
+sudo apt-get update
+sudo apt-get install -y mysql-client-core-8.0
 
-# Install AWS CLI manually (if missing)
-if ! command -v aws &> /dev/null; then
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-    unzip awscliv2.zip
-    chmod +x ./aws/install
-    sudo ./aws/install
-    rm -rf awscliv2.zip aws
-fi
-
-# Navigate to the webapp directory
+# Navigate to your webapp directory
 cd /opt/csye6225/webapp
+
+# Securely fetch DB credentials from Secrets Manager
+
+SECRET_NAME="${aws_secretsmanager_secret.rds_password_secret.name}"
+DB_CREDENTIALS=$(aws secretsmanager get-secret-value \
+  --secret-id "$SECRET_NAME" \
+  --region "${var.aws_region}" \
+  --query 'SecretString' \
+  --output text)
+
+DB_USERNAME=$(echo $DB_CREDENTIALS | jq -r .username)
+DB_PASSWORD=$(echo $DB_CREDENTIALS | jq -r .password)
 
 # Write environment variables to .env file
 echo "DB_HOST=${aws_db_instance.rds_instance.address}" >> .env
-echo "DB_USER=${var.db_username}" >> .env
-echo "DB_PASSWORD=${local.db_password} " >> .env
+echo "DB_USER=$DB_USERNAME" >> .env
+echo "DB_PASSWORD=$DB_PASSWORD" >> .env
 echo "DB_NAME=${var.db_name}" >> .env
 echo "DB_PORT=${var.db_port}" >> .env
 echo "S3_BUCKET_NAME=${aws_s3_bucket.webapp_bucket.bucket}" >> .env
 echo "AWS_REGION=${var.aws_region}" >> .env
 echo "PORT=${var.port}" >> .env
 
-# Ensure CloudWatch config directory exists
+# Set up CloudWatch Agent config
 sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc
 
-# Create CloudWatch agent config file
 sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<EOT
 {
   "agent": {
@@ -124,7 +127,7 @@ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
   -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
   -s
 
-# Enable services on startup
+# Enable services
 sudo systemctl enable amazon-cloudwatch-agent
 sudo systemctl enable webapp.service
 
