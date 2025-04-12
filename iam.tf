@@ -46,7 +46,7 @@ resource "aws_iam_role_policy_attachment" "s3_access_policy_attachment" {
 
 # IAM Policy for EC2 to Access Secrets Manager
 resource "aws_iam_policy" "ec2_secrets_manager_policy" {
-  name        = "EC2SecretsManagerPolicy"
+  name        = "EC2SecretsManagerAndKMSPolicy"
   description = "Policy to allow EC2 instance to retrieve secrets from Secrets Manager"
 
   policy = jsonencode({
@@ -58,7 +58,12 @@ resource "aws_iam_policy" "ec2_secrets_manager_policy" {
           "secretsmanager:GetSecretValue",
           "secretsmanager:DescribeSecret"
         ]
-        Resource = aws_secretsmanager_secret.db_password.arn
+        Resource = aws_secretsmanager_secret.rds_password_secret.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = "kms:Decrypt"
+        Resource = aws_kms_key.secrets_key.arn
       }
     ]
   })

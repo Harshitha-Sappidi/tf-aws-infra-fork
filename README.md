@@ -58,6 +58,21 @@ The GitHub Actions workflow is defined in .github/workflows/terraform.yml.
 
 To enforce branch protection, enable Status Checks on GitHub.
 
+## Commands to import SSL certificate
+
+### Step 1:Generate Private Key and CSR
+openssl req -new -newkey rsa:2048 -nodes -keyout private-key.pem -out csr.pem
+
+ Generates private-key.pem and csr.pem for requesting an SSL certificate.
+
+### Step 2: Importing Certificate to AWS ACM
+aws acm import-certificate \
+  --certificate fileb://demo_harshithasappidi_me.crt \
+  --private-key fileb://private-key.pem \
+  --certificate-chain fileb://demo_harshithasappidi_me.ca-bundle \
+  --region us-east-1 \
+  --profile demo
+
 ### Folder Structure
 
 ```plaintext

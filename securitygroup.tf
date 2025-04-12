@@ -52,13 +52,13 @@ resource "aws_security_group" "loadbalancer_securitygroup" {
   name        = var.loadbalancer_securitygroup
   description = "Security group for Load Balancer"
 
-  # Allow HTTP traffic (port 80) from anywhere
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = var.lb_ingress_cidr_blocks
-  }
+  # # Allow HTTP traffic (port 80) from anywhere
+  # ingress {
+  #   from_port   = 80
+  #   to_port     = 80
+  #   protocol    = "tcp"
+  #   cidr_blocks = var.lb_ingress_cidr_blocks
+  # }
 
   # Allow HTTPS traffic (port 443) from anywhere
   ingress {
